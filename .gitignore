@@ -8,6 +8,7 @@ Add this content to `.gitignore`:
 /node_modules
 /.pnp
 .pnp.js
+.env
 
 # testing
 /coverage
