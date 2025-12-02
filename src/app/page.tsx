@@ -1,4 +1,5 @@
 import { Button } from "@/components/ui/button";
+import FileUpload from "@/components/ui/FileUpload";
 import { UserButton } from "@clerk/nextjs";
 import { auth } from "@clerk/nextjs/server";
 import { LogIn } from "lucide-react";
@@ -25,7 +26,7 @@ export default async function Home() {
             answer questions and understand research with AI
             </p>
             <div className="w-full mt-4">
-              {isAuth ? (<h1>fileupload</h1>):(
+              {isAuth ? (<FileUpload/>):(
                 <Link href="/sign-in">
                 <Button>Login to get Started! 
                   <LogIn />

@@ -7,6 +7,6 @@ export default {
   dialect: "postgresql",                // new verson syntax
   schema: "./src/lib/db/schema.ts",
   dbCredentials: {
-    url: process.env.DATABASE_URL!,     // new verson syntax
+    url: process.env.DATABASE_URL!,     //new verson syntax
   },
 } satisfies Config;
