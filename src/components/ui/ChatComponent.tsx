@@ -3,6 +3,7 @@
 import React, { useState } from "react";
 import { Input } from "./input";
 import { useChat } from "@ai-sdk/react";
+import { DefaultChatTransport } from "ai";
 import { Button } from "./button";
 import { Send } from "lucide-react";
 import MessageList from "./MessageList";
@@ -10,7 +11,11 @@ import MessageList from "./MessageList";
 type Props = {};
 
 const ChatComponent = (props: Props) => {
-    const { messages, sendMessage, status } = useChat();
+    const { messages, sendMessage, status } = useChat({
+        transport: new DefaultChatTransport({
+            api: "/api/chat"
+        })
+    });
     const [input, setInput] = useState("");
 
     const handleSubmit = (e: React.FormEvent) => {
@@ -33,7 +38,6 @@ const ChatComponent = (props: Props) => {
                 onSubmit={handleSubmit}
                 className="sticky bottom-0 inset-x-0 px-2 py-4 bg-white flex"
             >
-
                 <div className="flex">
                     <Input
                         value={input}
@@ -45,7 +49,6 @@ const ChatComponent = (props: Props) => {
                         <Send className="h-4 w-4" />
                     </Button>
                 </div>
-
             </form>
         </div>
     );
