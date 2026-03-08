@@ -31,24 +31,22 @@ const ChatComponent = (props: Props) => {
                 <h3 className="text-xl font-bold">Chat</h3>
             </div>
 
-            {/* Message Lists  */}
+            {/* Message Lists appears here */}
             <MessageList messages={messages} />
 
             <form
                 onSubmit={handleSubmit}
                 className="sticky bottom-0 inset-x-0 px-2 py-4 bg-white flex"
             >
-                <div className="flex">
-                    <Input
-                        value={input}
-                        onChange={(e) => setInput(e.target.value)}
-                        placeholder="Ask any question..."
-                        className="w-full"
-                    />
-                    <Button type="submit" className="bg-blue-600 ml-2">
-                        <Send className="h-4 w-4" />
-                    </Button>
-                </div>
+                <Input
+                    value={input}
+                    onChange={(e) => setInput(e.target.value)}
+                    placeholder="Ask any question..."
+                    className="w-full"
+                />
+                <Button type="submit" className="bg-blue-600 ml-2">
+                    <Send className="h-4 w-4" />
+                </Button>
             </form>
         </div>
     );
