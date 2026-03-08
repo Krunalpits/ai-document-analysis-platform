@@ -41,7 +41,7 @@ console.log("PDF URL:", currentChat?.pdfUrl);
         </div>
 
         <div className="flex-[3] border-l-4 border-l-slate-200">
-          <ChatComponent />
+          <ChatComponent chatId={parseInt(chatId)} />
         </div>
       </div>
     </div>

@@ -11,3 +11,6 @@ export async function getEmbeddings(input: string) {
     });
     return response.data[0].embedding as number[];
 }
+
+// Alias so pinecone.ts can use the old name
+export const getEmbedding = getEmbeddings;
