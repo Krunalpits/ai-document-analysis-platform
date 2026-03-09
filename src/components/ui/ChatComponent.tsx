@@ -76,7 +76,7 @@ function ChatInner({ chatId, initialMessages }: { chatId: number; initialMessage
                 <h3 className="text-xl font-bold">Chat</h3>
             </div>
 
-            <MessageList messages={messages} />
+            <MessageList messages={messages} isLoading={status === "submitted"} />
 
             <form
                 onSubmit={handleSubmit}
