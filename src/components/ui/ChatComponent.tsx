@@ -7,17 +7,49 @@ import { DefaultChatTransport } from "ai";
 import { Button } from "./button";
 import { Send } from "lucide-react";
 import MessageList from "./MessageList";
+import { useQuery } from "@tanstack/react-query";
+import axios from "axios";
 
-type Props = {chatId: number};
+type Props = { chatId: number };
 
-const ChatComponent = ({chatId}: Props) => {
+const ChatComponent = ({ chatId }: Props) => {
+    const { data, isLoading } = useQuery({
+        queryKey: ["chat", chatId],
+        queryFn: async () => {
+            const response = await axios.post("/api/get-messages", {
+                chatId,
+            });
+            return response.data;
+        },
+    });
+
+    // Convert DB messages to UIMessage format
+    const initialMessages = React.useMemo(() => {
+        if (!data) return [];
+        return data.map((m: { id: number; content: string; role: string }) => ({
+            id: String(m.id),
+            role: m.role === "user" ? "user" as const : "assistant" as const,
+            parts: [{ type: "text" as const, text: m.content }],
+        }));
+    }, [data]);
+
+    if (isLoading) {
+        return <div className="p-4">Loading chat...</div>;
+    }
+
+    return <ChatInner chatId={chatId} initialMessages={initialMessages} />;
+};
+
+// Separate component so useChat initializes AFTER data is loaded
+function ChatInner({ chatId, initialMessages }: { chatId: number; initialMessages: any[] }) {
     const { messages, sendMessage, status } = useChat({
         transport: new DefaultChatTransport({
             api: "/api/chat",
             body: {
-                chatId
-            }
-        })
+                chatId,
+            },
+        }),
+        messages: initialMessages,
     });
     const [input, setInput] = useState("");
 
@@ -27,22 +59,23 @@ const ChatComponent = ({chatId}: Props) => {
         sendMessage({ text: input });
         setInput("");
     };
-React.useEffect(() => {
-    const messageContainer = document.getElementById("message-container");
-    if (messageContainer) {
-      messageContainer.scrollTo({
-        top: messageContainer.scrollHeight,
-        behavior: "smooth",
-      });
-    }
-  }, [messages]);
+
+    React.useEffect(() => {
+        const messageContainer = document.getElementById("message-container");
+        if (messageContainer) {
+            messageContainer.scrollTo({
+                top: messageContainer.scrollHeight,
+                behavior: "smooth",
+            });
+        }
+    }, [messages]);
+
     return (
         <div className="relative max-h-screen overflow-scroll" id="message-container">
             <div className="sticky top-0 inset-x-0 p-2 bg-white h-fit">
                 <h3 className="text-xl font-bold">Chat</h3>
             </div>
 
-            {/* Message Lists appears here */}
             <MessageList messages={messages} />
 
             <form
@@ -61,6 +94,6 @@ React.useEffect(() => {
             </form>
         </div>
     );
-};
+}
 
 export default ChatComponent;

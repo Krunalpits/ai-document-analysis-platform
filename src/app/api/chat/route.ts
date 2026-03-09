@@ -1,6 +1,6 @@
 import { getContext } from "@/lib/context";
 import { db } from "@/lib/db";
-import { chats } from "@/lib/db/schema";
+import { chats, messages as _messages } from "@/lib/db/schema";
 import { openai } from "@ai-sdk/openai";
 import { streamText, convertToModelMessages } from "ai";
 import { eq } from "drizzle-orm";
@@ -16,13 +16,18 @@ export async function POST(req: Request) {
         const fileKey = _chats[0].fileKey;
         const lastMessage = messages[messages.length - 1];
 
-        // Extract text from the message - v6 uses parts instead of content
         const lastMessageText = lastMessage.parts
             ?.filter((p: { type: string }) => p.type === "text")
             .map((p: { text: string }) => p.text)
             .join("") || lastMessage.content || "";
 
         const context = await getContext(lastMessageText, fileKey);
+
+        await db.insert(_messages).values({
+            chatId,
+            content: lastMessageText,
+            role: "user",
+        });
 
         const result = streamText({
             model: openai("gpt-3.5-turbo"),
@@ -41,6 +46,13 @@ export async function POST(req: Request) {
       AI assistant will not invent anything that is not drawn directly from the context.
       `,
             messages: await convertToModelMessages(messages),
+           onFinish: async ({ text }) => {
+    await db.insert(_messages).values({
+        chatId,
+        content: text,
+        role: "system",
+    });
+},
         });
         return result.toUIMessageStreamResponse();
     } catch (error) {
