@@ -7,6 +7,7 @@ import { chats } from "@/lib/db/schema";
 import ChatSideBar from "@/components/ui/ChatSideBar";
 import PDFViewer from "@/components/ui/PDFViewer";
 import ChatComponent from "@/components/ui/ChatComponent";
+import { checkSubscription } from "@/lib/subscription";
 
 type Props = {
   params: {
@@ -27,13 +28,14 @@ const ChatPage = async ({ params }: Props) => {
   if (!_chats.find((chat) => chat.id === chatIdNum)) return redirect("/");
 
 const currentChat = _chats.find((chat) => chat.id === parseInt(chatId));
+  const isPro = await checkSubscription();
 console.log("PDF URL:", currentChat?.pdfUrl);
 
   return (
     <div className="flex max-h-screen overflow-scroll">
       <div className="flex w-full max-h-screen overflow-scroll">
         <div className="flex-[1] max-w-xs">
-          <ChatSideBar chats={_chats} chatId={chatIdNum} />
+          <ChatSideBar chats={_chats} chatId={chatIdNum} isPro={isPro}/>
         </div>
 
         <div className="max-h-screen p-4 overflow-scroll flex-[5]">
