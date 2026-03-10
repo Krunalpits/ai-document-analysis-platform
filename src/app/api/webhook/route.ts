@@ -18,7 +18,7 @@ export async function POST(req: Request) {
             signature,
             process.env.STRIPE_WEBHOOK_SIGNING_SECRET as string
         );
-    } catch (error) {
+    } catch (_error) {
         return new NextResponse("webhook error", { status: 400 });
     }
 
@@ -26,7 +26,7 @@ export async function POST(req: Request) {
         const session = event.data.object as Stripe.Checkout.Session;
         const subscription = await stripe.subscriptions.retrieve(
             session.subscription as string
-        ) as any;
+        ) as Stripe.Subscription;
         if (!session?.metadata?.userId) {
             return new NextResponse("no userid", { status: 400 });
         }
@@ -43,13 +43,13 @@ export async function POST(req: Request) {
 
     if (event.type === "invoice.payment_succeeded") {
         const invoice = event.data.object as Stripe.Invoice;
-        const subscriptionId = (invoice as any).subscription as string;
+        const subscriptionId = (invoice as Stripe.Invoice & { subscription: string }).subscription;
         if (!subscriptionId) {
             return new NextResponse(null, { status: 200 });
         }
         const subscription = await stripe.subscriptions.retrieve(
             subscriptionId
-        ) as any;
+        ) as Stripe.Subscription;
         await db
             .update(userSubscriptions)
             .set({
