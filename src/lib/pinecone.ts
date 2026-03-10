@@ -1,5 +1,4 @@
-// src/lib/pinecone.ts
-import { Pinecone, PineconeRecord } from "@pinecone-database/pinecone";
+import { Pinecone, PineconeRecord, RecordMetadata } from "@pinecone-database/pinecone";
 import { downloadFromS3 } from "./s3-server";
 import { PDFLoader } from "langchain/document_loaders/fs/pdf";
 import md5 from "md5";
@@ -24,33 +23,29 @@ type PDFPage = {
 };
 
 export async function loadS3IntoPinecone(filekey: string) {
-  // 1) download pdf from S3
   console.log("downloading s3 into file system");
   const file_name = await downloadFromS3(filekey);
   if (!file_name) {
     throw new Error("Could not download file from S3");
   }
 
-  // 2) load pdf into memory
   console.log("loading pdf into memory:", file_name);
   const loader = new PDFLoader(file_name);
   const pages = (await loader.load()) as PDFPage[];
 
-  // 3) split/segment
   const documents = await Promise.all(pages.map(prepareDocument));
 
-  // 4) embed to vectors
-  const vectors = (await Promise.all(documents.flat().map(embedDocument))) as PineconeRecord[];
+  const vectors = (await Promise.all(
+    documents.flat().map(embedDocument)
+  )) as PineconeRecord<RecordMetadata>[];
 
-  // 5) upsert to pinecone (NEW SDK)
   const client = getPineconeClient();
   const index = client.index("ai-document-analysis-platform");
   const namespace = index.namespace(convertToAscii(filekey));
 
   console.log("inserting vectors into pinecone", vectors.length);
 
-  // IMPORTANT: your SDK expects { records: [...] }
-  await namespace.upsert({ records: vectors });
+await namespace.upsert(vectors as any);
 
   return documents[0];
 }
@@ -67,7 +62,7 @@ async function embedDocument(doc: Document) {
         text: doc.metadata.text,
         pageNumber: doc.metadata.pageNumber,
       },
-    } as PineconeRecord;
+    } as PineconeRecord<RecordMetadata>;
   } catch (error) {
     console.log("error embedding document", error);
     throw error;

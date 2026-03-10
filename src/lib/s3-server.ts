@@ -6,7 +6,7 @@ export async function downloadFromS3(file_key: string) {
     AWS.config.update({
       accessKeyId: process.env.NEXT_PUBLIC_S3_ACCESS_KEY_ID,
       secretAccessKey: process.env.NEXT_PUBLIC_S3_SECRET_ACCESS_KEY,
-      region: "us-east-2", // ✅ IMPORTANT
+      region: "us-east-2",
     });
 
     const s3 = new AWS.S3();
@@ -17,7 +17,8 @@ export async function downloadFromS3(file_key: string) {
     };
 
     const obj = await s3.getObject(params).promise();
-    const file_name = `temp/pdf-${Date.now()}.pdf`;
+    // ✅ changed temp/ to /tmp/ — only writable directory on Vercel
+    const file_name = `/tmp/pdf-${Date.now()}.pdf`;
     fs.writeFileSync(file_name, obj.Body as Buffer);
     return file_name;
   } catch (error) {
